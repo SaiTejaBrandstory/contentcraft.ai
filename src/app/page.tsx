@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Download, Save, Trash2, Edit2, Copy, Wand2, Plus, ArrowRight, CheckCircle, Loader, Brain, Sparkles, ChevronDown, ChevronUp, Target, PenTool, RefreshCw, FileText, FileSpreadsheet, Info } from 'lucide-react';
+import { Edit2, Copy, Wand2, ArrowRight, CheckCircle, Loader, Brain, Sparkles, Target, PenTool } from 'lucide-react';
 
 // Type definitions
 interface BrandFundamentals {
@@ -82,6 +82,58 @@ interface Platform {
   };
 }
 
+interface Slide {
+  slideNumber: number;
+  type?: string;
+  headline: string;
+  subheadline?: string;
+  content?: string;
+  visualDirection: string;
+  cta?: string;
+}
+
+interface Tweet {
+  tweetNumber: number;
+  content: string;
+  characterCount?: number;
+}
+
+interface DataPoint {
+  statistic: string;
+  description: string;
+  source: string;
+}
+
+interface ScriptSegment {
+  timing: string;
+  voiceover: string;
+  visual: string;
+  textOverlay?: string;
+}
+
+interface Frame {
+  frameNumber: number;
+  type: string;
+  text: string;
+  visual: string;
+  interactive: string;
+}
+
+interface EmailBody {
+  greeting: string;
+  opening: string;
+  mainContent: string;
+  benefits?: string[];
+  cta: string;
+  closing: string;
+}
+
+interface Section {
+  heading: string;
+  content: string;
+  keyPoints?: string[];
+}
+
 interface GeneratedContent {
   id: string;
   contentNumber: number;
@@ -89,7 +141,35 @@ interface GeneratedContent {
   platform: string;
   contentStructure: string;
   title: string;
-  [key: string]: any; // For flexible content structure
+  hook?: string;
+  body?: string | EmailBody;
+  cta?: string;
+  caption?: string;
+  hashtags?: string[];
+  slides?: Slide[];
+  tweets?: Tweet[];
+  dataPoints?: DataPoint[];
+  script?: {
+    hook: ScriptSegment;
+    content: ScriptSegment[];
+    cta: ScriptSegment;
+  };
+  frames?: Frame[];
+  subjectLine?: string;
+  preheader?: string;
+  ps?: string;
+  metaDescription?: string;
+  introduction?: string;
+  sections?: Section[];
+  conclusion?: string;
+  keywords?: string[];
+  headline?: string;
+  primaryText?: string;
+  description?: string;
+  adFormat?: string;
+  subtitle?: string;
+  visualStructure?: string;
+  colorScheme?: string;
 }
 
 const V28Platform = () => {
@@ -108,11 +188,11 @@ const V28Platform = () => {
       selectedContentTypes: ContentType[];
       selectedPlatforms: Platform[];
       generatedContents: GeneratedContent[];
-      contentStrategy: any;
+      contentStrategy: null;
     };
     stage3: {
       generatedContent: GeneratedContent[];
-      editMode: Record<string, any>;
+      editMode: Record<string, boolean>;
     };
   }>({
     stage1: {
@@ -204,7 +284,7 @@ Generate EXACT JSON (NO markdown, NO backticks):
     "description": "Comprehensive 3-4 sentence description of brand voice",
     "toneAttributes": ["Attribute 1", "Attribute 2", "Attribute 3", "Attribute 4"],
     "doStatements": ["Do: Statement 1", "Do: Statement 2", "Do: Statement 3"],
-    "dontStatements": ["Don't: Statement 1", "Don't: Statement 2", "Don't: Statement 3"],
+    "dontStatements": ["Don&apos;t: Statement 1", "Don&apos;t: Statement 2", "Don&apos;t: Statement 3"],
     "example": "Brief example of how the brand would communicate"
   },
   "competitiveAdvantages": [
@@ -255,7 +335,7 @@ Generate EXACT JSON (NO markdown, NO backticks):
         });
 
         const brandData = await brandResponse.json();
-        let brandText = brandData.content[0].text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        const brandText = brandData.content[0].text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
         const brandFundamentals = JSON.parse(brandText);
         
         setProgress(70);
@@ -357,7 +437,7 @@ Generate EXACT JSON (NO markdown):
         });
 
         const campaignData = await campaignResponse.json();
-        let campaignText = campaignData.content[0].text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        const campaignText = campaignData.content[0].text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
         const campaignsResult = JSON.parse(campaignText);
 
         setProgress(100);
@@ -386,7 +466,7 @@ Generate EXACT JSON (NO markdown):
         if (error instanceof Error) {
           errorMessage = error.message;
         } else if (typeof error === 'object' && error !== null && 'error' in error) {
-          errorMessage = (error as any).error;
+          errorMessage = (error as { error: string }).error;
         }
         
         alert(`Error: ${errorMessage}\n\nPlease check:\n1. Your API key is set in .env.local\n2. Your internet connection\n3. The Anthropic API is accessible`);
@@ -616,7 +696,7 @@ Generate EXACT JSON (NO markdown):
                   </ul>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-purple-200">
-                  <h5 className="font-semibold text-red-900 mb-2 text-sm">❌ Don't</h5>
+                  <h5 className="font-semibold text-red-900 mb-2 text-sm">❌ Don&apos;t</h5>
                   <ul className="space-y-1">
                     {projectData.stage1.brandFundamentals.brandVoice.dontStatements.map((stmt, i) => (
                       <li key={i} className="text-xs text-gray-700">{stmt}</li>
@@ -1147,7 +1227,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
             
             // Add character counts for tweets if thread
             if (content.contentStructure === 'thread' && content.tweets) {
-              content.tweets = content.tweets.map((tweet: any) => ({
+              content.tweets = content.tweets.map((tweet: Tweet) => ({
                 ...tweet,
                 characterCount: tweet.content.length
               }));
@@ -1396,13 +1476,13 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
       } else {
         setIsLoading(false);
       }
-    }, [projectData.stage2.generatedContents]);
+    }, []);
 
     const getCharacterStatus = (content: GeneratedContent) => {
       const platform = projectData.stage2.selectedPlatforms.find(p => p.id === content.platform?.toLowerCase());
       
       if (content.contentStructure === 'thread' && content.tweets) {
-        const overLimit = content.tweets.some((t: any) => t.characterCount > 280);
+        const overLimit = content.tweets.some((t: Tweet) => (t.characterCount ?? 0) > 280);
         return { 
           color: overLimit ? 'red' : 'green', 
           status: overLimit ? '⚠️ Some tweets over 280 chars!' : '✓ All tweets within limit'
@@ -1429,7 +1509,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
       if (content.contentStructure === 'multi-slide' && content.slides) {
         return (
           <div className="space-y-3">
-            {content.slides.map((slide: any, idx: number) => (
+            {content.slides.map((slide: Slide, idx: number) => (
               <div key={idx} className={`p-4 rounded-lg border-2 ${
                 slide.type === 'cover' ? 'bg-purple-50 border-purple-300' :
                 slide.type === 'cta' ? 'bg-green-50 border-green-300' :
@@ -1467,7 +1547,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
               {content.subtitle && <p className="text-sm text-gray-600">{content.subtitle}</p>}
             </div>
             <div className="grid md:grid-cols-2 gap-3">
-              {content.dataPoints.map((point: any, idx: number) => (
+              {content.dataPoints.map((point: DataPoint, idx: number) => (
                 <div key={idx} className="bg-white p-4 rounded-lg border-2 border-gray-200">
                   <div className="text-3xl font-bold text-blue-600 mb-2">{point.statistic}</div>
                   <p className="text-sm mb-1">{point.description}</p>
@@ -1483,8 +1563,8 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
       if (content.contentStructure === 'thread' && content.tweets) {
         return (
           <div className="space-y-2">
-            {content.tweets.map((tweet: any, idx: number) => {
-              const isOver = tweet.characterCount > 280;
+            {content.tweets.map((tweet: Tweet, idx: number) => {
+              const isOver = (tweet.characterCount ?? 0) > 280;
               return (
                 <div key={idx} className={`p-3 rounded-lg border-2 ${isOver ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'}`}>
                   <div className="flex justify-between items-center mb-2">
@@ -1511,7 +1591,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
               <p className="text-xs text-gray-600"><strong>Visual:</strong> {content.script.hook.visual}</p>
               <p className="text-xs text-gray-600"><strong>Text:</strong> {content.script.hook.textOverlay}</p>
             </div>
-            {content.script.content.map((seg: any, idx: number) => (
+            {content.script.content.map((seg: ScriptSegment, idx: number) => (
               <div key={idx} className="bg-blue-50 p-4 rounded-lg">
                 <h5 className="font-bold text-sm mb-2">📹 SEGMENT {idx + 1} ({seg.timing})</h5>
                 <p className="text-sm mb-1"><strong>Voiceover:</strong> {seg.voiceover}</p>
@@ -1530,7 +1610,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
       if (content.contentStructure === 'story-frames' && content.frames) {
         return (
           <div className="space-y-3">
-            {content.frames.map((frame: any, idx: number) => (
+            {content.frames.map((frame: Frame, idx: number) => (
               <div key={idx} className={`p-4 rounded-lg border-2 ${
                 frame.type === 'opener' ? 'bg-purple-50 border-purple-300' :
                 frame.type === 'cta' ? 'bg-green-50 border-green-300' :
@@ -1560,14 +1640,14 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
               <p className="text-lg font-bold">{content.subjectLine}</p>
               {content.preheader && <p className="text-sm text-gray-600 mt-2">{content.preheader}</p>}
             </div>
-            {content.body && (
+            {content.body && typeof content.body === 'object' && 'greeting' in content.body && (
               <div className="bg-white p-4 rounded-lg border">
-                <p className="text-sm mb-2">{content.body.greeting}</p>
-                <p className="text-sm mb-3">{content.body.opening}</p>
-                <p className="text-sm mb-3">{content.body.mainContent}</p>
-                {content.body.benefits && (
+                <p className="text-sm mb-2">{(content.body as EmailBody).greeting}</p>
+                <p className="text-sm mb-3">{(content.body as EmailBody).opening}</p>
+                <p className="text-sm mb-3">{(content.body as EmailBody).mainContent}</p>
+                {(content.body as EmailBody).benefits && (
                   <ul className="mb-3">
-                    {content.body.benefits.map((b: any, i: number) => (
+                    {(content.body as EmailBody).benefits?.map((b: string, i: number) => (
                       <li key={i} className="text-sm flex gap-2 mb-1">
                         <span className="text-green-600">✓</span>
                         <span>{b}</span>
@@ -1577,10 +1657,10 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
                 )}
                 <div className="text-center my-4">
                   <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold">
-                    {content.body.cta}
+                    {(content.body as EmailBody).cta}
                   </button>
                 </div>
-                <p className="text-sm">{content.body.closing}</p>
+                <p className="text-sm">{(content.body as EmailBody).closing}</p>
               </div>
             )}
           </div>
@@ -1600,13 +1680,13 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
                 <p className="text-sm">{content.introduction}</p>
               </div>
             )}
-            {content.sections.map((sec: any, idx: number) => (
+            {content.sections.map((sec: Section, idx: number) => (
               <div key={idx} className="bg-blue-50 p-4 rounded-lg">
                 <h6 className="font-bold text-lg mb-2">{sec.heading}</h6>
                 <p className="text-sm mb-2">{sec.content}</p>
                 {sec.keyPoints && (
                   <ul className="space-y-1">
-                    {sec.keyPoints.map((p: any, i: number) => (
+                    {sec.keyPoints.map((p: string, i: number) => (
                       <li key={i} className="text-sm flex gap-2">
                         <span>•</span>
                         <span>{p}</span>
@@ -1651,7 +1731,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
               <p className="text-sm">{content.hook}</p>
             </div>
           )}
-          {content.body && (
+          {content.body && typeof content.body === 'string' && (
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-xs font-semibold mb-2">📝 CONTENT</p>
               <p className="text-sm">{content.body}</p>
@@ -1742,7 +1822,7 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
                         <div className="mt-4">
                           <p className="text-xs font-semibold mb-2"># HASHTAGS</p>
                           <div className="flex flex-wrap gap-2">
-                            {content.hashtags.map((tag: any, i: number) => (
+                            {content.hashtags.map((tag: string, i: number) => (
                               <span key={i} className="text-sm px-3 py-1 bg-gray-100 rounded-full">#{tag}</span>
                             ))}
                           </div>
