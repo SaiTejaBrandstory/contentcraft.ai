@@ -706,7 +706,7 @@ Generate EXACT JSON (NO markdown):
               </div>
               <div className="bg-white p-4 rounded-lg border border-purple-200">
                 <h5 className="font-semibold text-purple-900 mb-2 text-sm">Example</h5>
-                <p className="text-sm text-gray-700 italic">"{projectData.stage1.brandFundamentals.brandVoice.example}"</p>
+                <p className="text-sm text-gray-700 italic">&ldquo;{projectData.stage1.brandFundamentals.brandVoice.example}&rdquo;</p>
               </div>
             </div>
 
