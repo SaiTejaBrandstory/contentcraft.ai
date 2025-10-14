@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Edit2, Copy, Wand2, ArrowRight, CheckCircle, Loader, Brain, Sparkles, Target, PenTool } from 'lucide-react';
+import { Edit2, Copy, Wand2, ArrowRight, CheckCircle, Loader, Brain, Sparkles, Target, PenTool, Download } from 'lucide-react';
 
 // Type definitions
 interface BrandFundamentals {
@@ -172,6 +172,62 @@ interface GeneratedContent {
   colorScheme?: string;
 }
 
+// Download utility functions
+const downloadHTML = (filename: string, htmlContent: string) => {
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const downloadDOC = (filename: string, htmlContent: string) => {
+  const docContent = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>${filename}</title></head>
+    <body>${htmlContent}</body>
+    </html>
+  `;
+  const blob = new Blob(['\ufeff', docContent], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const downloadCSV = (filename: string, csvContent: string) => {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const downloadPDF = (htmlContent: string) => {
+  // Create a temporary container
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+      // Note: User needs to select "Save as PDF" in print dialog
+    };
+  }
+};
+
 const V28Platform = () => {
   const [currentStage, setCurrentStage] = useState(1);
   const [projectData, setProjectData] = useState<{
@@ -216,6 +272,1609 @@ const V28Platform = () => {
     }
   });
 
+  // ==================== DOWNLOAD FUNCTIONS ====================
+  const downloadStage1 = () => {
+    if (!projectData.stage1.brandFundamentals) {
+      alert('No brand analysis data to download');
+      return;
+    }
+
+    const bf = projectData.stage1.brandFundamentals;
+    const campaigns = projectData.stage1.campaigns;
+    
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Analysis - ${projectData.stage1.websiteUrl}</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 1200px; margin: 0 auto; padding: 24px; background: linear-gradient(to bottom right, #eff6ff, #f5f3ff, #fef2f2); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    h1, h2, h3, h4, h5, h6, p { margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(to right, #eff6ff, #dbeafe); padding: 24px; border-radius: 12px; border: 1px solid #3b82f6; margin-bottom: 24px;">
+    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">AI Master Researcher</h2>
+    <p style="color: #4b5563; font-size: 14px;">Comprehensive brand analysis</p>
+  </div>
+
+  <!-- Success Banner -->
+  <div style="background: linear-gradient(to right, #d1fae5, #a7f3d0); padding: 24px; border-radius: 12px; border: 2px solid #86efac; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 28px;">✅</span>
+      <h3 style="font-size: 24px; font-weight: 700; color: #1f2937;">✅ Brand Analysis Complete</h3>
+    </div>
+  </div>
+
+  <!-- Business Nature -->
+  <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #93c5fd; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+      <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: white; font-size: 24px;">🧠</span>
+      </div>
+      <h4 style="font-weight: 700; font-size: 20px;">Business Nature</h4>
+    </div>
+    <p style="color: #374151; line-height: 1.6;">${bf.businessNature}</p>
+  </div>
+
+  <!-- Mission & Vision -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+    <div style="background: linear-gradient(to bottom right, #faf5ff, #f3e8ff); padding: 24px; border-radius: 12px; border: 2px solid #c084fc;">
+      <h5 style="font-weight: 700; color: #6b21a8; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 24px;">🎯</span> Mission
+      </h5>
+      <p style="color: #7c3aed; line-height: 1.6;">${bf.mission}</p>
+    </div>
+    <div style="background: linear-gradient(to bottom right, #eef2ff, #e0e7ff); padding: 24px; border-radius: 12px; border: 2px solid #818cf8;">
+      <h5 style="font-weight: 700; color: #3730a3; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 24px;">🌟</span> Vision
+      </h5>
+      <p style="color: #4f46e5; line-height: 1.6;">${bf.vision}</p>
+    </div>
+  </div>
+
+  <!-- Core Values -->
+  <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #fdba74; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">💎</span> Core Values
+    </h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+      ${bf.values.map(v => `<div style="padding: 8px 16px; background: linear-gradient(to right, #fed7aa, #fef3c7); color: #9a3412; border-radius: 20px; font-weight: 600; border: 2px solid #fb923c;">${v}</div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Target Audience -->
+  <div style="background: linear-gradient(to bottom right, #eff6ff, #cffafe); padding: 24px; border-radius: 12px; border: 2px solid #93c5fd; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">👥</span> Target Audience Intelligence
+    </h4>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #93c5fd;">
+        <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 8px; font-size: 14px;">📊 Demographics</h5>
+        <p style="font-size: 14px; color: #374151;">${bf.targetAudience.demographic}</p>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #93c5fd;">
+        <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 8px; font-size: 14px;">🧠 Psychographics</h5>
+        <p style="font-size: 14px; color: #374151;">${bf.targetAudience.psychographic}</p>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #93c5fd;">
+        <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 8px; font-size: 14px;">😰 Pain Points</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.targetAudience.painPoints.map(p => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 4px;">
+              <span style="color: #ef4444; margin-top: 4px;">•</span>
+              <span>${p}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #93c5fd;">
+        <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 8px; font-size: 14px;">✨ Aspirations</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.targetAudience.aspirations.map(a => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 4px;">
+              <span style="color: #22c55e; margin-top: 4px;">•</span>
+              <span>${a}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </div>
+    <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #93c5fd;">
+      <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 8px; font-size: 14px;">📱 Content Habits</h5>
+      <p style="font-size: 14px; color: #374151;">${bf.targetAudience.contentHabits}</p>
+    </div>
+  </div>
+
+  <!-- Unique Value Proposition -->
+  <div style="background: linear-gradient(to bottom right, #d1fae5, #a7f3d0); padding: 24px; border-radius: 12px; border: 2px solid #86efac; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">🚀</span> Unique Value Proposition
+    </h4>
+    <p style="font-size: 18px; font-weight: 600; color: #065f46; margin-bottom: 16px;">${bf.uniqueValue.primary}</p>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #86efac;">
+        <h5 style="font-weight: 600; color: #065f46; margin-bottom: 8px; font-size: 14px;">Supporting Points</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.uniqueValue.supporting.map(s => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #059669; font-weight: 700; margin-top: 4px;">✓</span>
+              <span>${s}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #86efac;">
+        <h5 style="font-weight: 600; color: #065f46; margin-bottom: 8px; font-size: 14px;">Proof Points</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.uniqueValue.proofPoints.map(p => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #059669; font-weight: 700; margin-top: 4px;">•</span>
+              <span>${p}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand Voice -->
+  <div style="background: linear-gradient(to bottom right, #fdf2f8, #fce7f3); padding: 24px; border-radius: 12px; border: 2px solid #f9a8d4; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">🎤</span> Brand Voice & Personality
+    </h4>
+    <p style="color: #701a75; margin-bottom: 16px; line-height: 1.6;">${bf.brandVoice.description}</p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #f9a8d4;">
+        <h5 style="font-weight: 600; color: #701a75; margin-bottom: 8px; font-size: 14px;">Tone Attributes</h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${bf.brandVoice.toneAttributes.map(attr => `<span style="font-size: 12px; padding: 4px 12px; background: #f3e8ff; color: #6b21a8; border-radius: 20px; font-weight: 500;">${attr}</span>`).join('')}
+        </div>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #f9a8d4;">
+        <h5 style="font-weight: 600; color: #065f46; margin-bottom: 8px; font-size: 14px;">✅ Do</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.brandVoice.doStatements.map(d => `<li style="font-size: 12px; color: #374151; margin-bottom: 4px;">${d}</li>`).join('')}
+        </ul>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #f9a8d4;">
+        <h5 style="font-weight: 600; color: #7f1d1d; margin-bottom: 8px; font-size: 14px;">❌ Don't</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.brandVoice.dontStatements.map(d => `<li style="font-size: 12px; color: #374151; margin-bottom: 4px;">${d}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+    <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #f9a8d4;">
+      <h5 style="font-weight: 600; color: #701a75; margin-bottom: 8px; font-size: 14px;">Example</h5>
+      <p style="font-size: 14px; color: #374151; font-style: italic;">"${bf.brandVoice.example}"</p>
+    </div>
+  </div>
+
+  <!-- Competitive Advantages -->
+  <div style="background: linear-gradient(to bottom right, #fef3c7, #fed7aa); padding: 24px; border-radius: 12px; border: 2px solid #fbbf24; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">🏆</span> Competitive Advantages
+    </h4>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+      ${bf.competitiveAdvantages.map((adv, i) => `
+        <div style="background: white; padding: 16px; border-radius: 8px; border: 2px solid #fbbf24;">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="width: 32px; height: 32px; background: #eab308; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">${i + 1}</div>
+            <div>
+              <h5 style="font-weight: 700; color: #1f2937; margin-bottom: 8px;">${adv.advantage}</h5>
+              <p style="font-size: 14px; color: #374151; margin-bottom: 8px;">${adv.description}</p>
+              <p style="font-size: 12px; color: #b45309; font-weight: 500;"><strong>Impact:</strong> ${adv.impact}</p>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <!-- Strategic Priorities -->
+  <div style="background: linear-gradient(to bottom right, #eef2ff, #dbeafe); padding: 24px; border-radius: 12px; border: 2px solid #818cf8; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">🎯</span> Strategic Priorities
+    </h4>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      ${bf.strategicPriorities.map((priority, i) => `
+        <div style="background: white; padding: 16px; border-radius: 8px; border: 2px solid #818cf8;">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="width: 32px; height: 32px; background: #4f46e5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 14px;">${i + 1}</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <h5 style="font-weight: 700; color: #1f2937;">${priority.priority}</h5>
+                <span style="font-size: 12px; padding: 4px 12px; background: #e0e7ff; color: #4338ca; border-radius: 20px; font-weight: 600;">${priority.timeline}</span>
+              </div>
+              <p style="font-size: 14px; color: #374151; margin-bottom: 8px;">${priority.description}</p>
+              <p style="font-size: 12px; color: #4338ca; font-weight: 500;"><strong>Expected Impact:</strong> ${priority.impact}</p>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <!-- Industry Context -->
+  <div style="background: linear-gradient(to bottom right, #f9fafb, #f1f5f9); padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; margin-bottom: 16px;">
+    <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">📊</span> Industry Context: ${projectData.stage1.businessVertical}
+    </h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <h5 style="font-weight: 600; color: #1e3a8a; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;"><span>📈</span> Trends</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.industryContext.trends.map(t => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #2563eb; margin-top: 4px;">•</span>
+              <span>${t}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <h5 style="font-weight: 600; color: #065f46; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;"><span>💡</span> Opportunities</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.industryContext.opportunities.map(o => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #059669; margin-top: 4px;">•</span>
+              <span>${o}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <h5 style="font-weight: 600; color: #7f1d1d; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;"><span>⚠️</span> Challenges</h5>
+        <ul style="list-style: none; padding: 0;">
+          ${bf.industryContext.challenges.map(c => `
+            <li style="font-size: 14px; color: #374151; display: flex; align-items: start; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #dc2626; margin-top: 4px;">•</span>
+              <span>${c}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategic Campaigns -->
+  <div style="background: linear-gradient(to bottom right, #fff1f2, #fce7f3); padding: 24px; border-radius: 12px; border: 2px solid #fda4af; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <h4 style="font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 24px;">🎪</span> Strategic Campaign Recommendations
+        <span style="font-size: 14px; font-weight: 400; color: #4b5563; margin-left: 8px;">(${campaigns.length} Campaigns)</span>
+      </h4>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      ${campaigns.map((campaign, i) => `
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 2px solid #fda4af;">
+          <div style="display: flex; align-items: start; gap: 16px;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(to bottom right, #f43f5e, #ec4899); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-shrink: 0;">${i + 1}</div>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 12px;">
+                <h5 style="font-weight: 700; color: #1f2937; font-size: 18px; margin-bottom: 4px;">${campaign.name}</h5>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 12px; padding: 4px 12px; background: #ffe4e6; color: #be123c; border-radius: 20px; font-weight: 600;">${campaign.objective}</span>
+                  <span style="font-size: 12px; padding: 4px 12px; background: #f3e8ff; color: #6b21a8; border-radius: 20px; font-weight: 600;">${campaign.duration}</span>
+                  <span style="font-size: 12px; padding: 4px 12px; background: #fef3c7; color: #b45309; border-radius: 20px; font-weight: 600;">${campaign.budget} Budget</span>
+                </div>
+              </div>
+              <p style="font-size: 14px; color: #374151; margin-bottom: 12px; line-height: 1.6;">${campaign.description}</p>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px;">
+                <div style="background: #eff6ff; padding: 12px; border-radius: 8px; border: 1px solid #93c5fd;">
+                  <h6 style="font-size: 12px; font-weight: 600; color: #1e3a8a; margin-bottom: 8px;">🎯 Target</h6>
+                  <p style="font-size: 14px; color: #374151;">${campaign.targetSegment}</p>
+                </div>
+                <div style="background: #d1fae5; padding: 12px; border-radius: 8px; border: 1px solid #86efac;">
+                  <h6 style="font-size: 12px; font-weight: 600; color: #065f46; margin-bottom: 8px;">💬 Message</h6>
+                  <p style="font-size: 14px; color: #374151;">${campaign.keyMessage}</p>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div>
+                  <h6 style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">Platforms</h6>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                    ${campaign.platforms.map(p => `<span style="font-size: 12px; padding: 4px 8px; background: #f3f4f6; border-radius: 4px;">${p}</span>`).join('')}
+                  </div>
+                </div>
+                <div>
+                  <h6 style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">Content Types</h6>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                    ${campaign.contentTypes.map(c => `<span style="font-size: 12px; padding: 4px 8px; background: #f3f4f6; border-radius: 4px;">${c}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 12px;">
+                <h6 style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">KPIs</h6>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                  ${campaign.kpis.map(kpi => `<span style="font-size: 12px; padding: 4px 8px; background: #e0e7ff; color: #4338ca; border-radius: 4px;">${kpi}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div style="margin-top: 40px; padding: 20px; background: white; border-radius: 8px; text-align: center; border: 1px solid #cbd5e1;">
+    <p style="color: #6b7280;">Generated by V28 AI Content Platform</p>
+  </div>
+</body>
+</html>
+    `;
+
+    downloadHTML('Brand_Analysis.html', htmlContent);
+  };
+
+  const downloadStage1PDF = () => {
+    if (!projectData.stage1.brandFundamentals) {
+      alert('No brand analysis data to download');
+      return;
+    }
+
+    const bf = projectData.stage1.brandFundamentals;
+    const campaigns = projectData.stage1.campaigns;
+
+    const pdfHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Analysis - ${projectData.stage1.websiteUrl}</title>
+  <style>
+    @media print {
+      @page { margin: 1cm; }
+      body { margin: 0; }
+    }
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
+    h1 { color: #1e40af; font-size: 28px; margin-bottom: 20px; }
+    h2 { color: #4f46e5; font-size: 20px; margin-top: 20px; margin-bottom: 12px; padding: 10px; background: #dbeafe; border-radius: 6px; page-break-after: avoid; }
+    h3 { color: #374151; font-size: 16px; margin-top: 15px; margin-bottom: 8px; }
+    h4 { color: #6b7280; font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 6px; }
+    .section { background: #f9fafb; padding: 12px; margin: 12px 0; border-radius: 6px; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 10px 0; }
+    .card { background: white; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+    ul { list-style: none; padding: 0; margin: 5px 0; }
+    li { padding: 3px 0; font-size: 13px; }
+    li:before { content: "• "; color: #6366f1; font-weight: bold; }
+    p { font-size: 14px; margin: 5px 0; line-height: 1.5; }
+    .value-tag { display: inline-block; padding: 4px 10px; margin: 3px; background: #fed7aa; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>🧠 Brand Analysis Report</h1>
+  <p><strong>Website:</strong> ${projectData.stage1.websiteUrl}</p>
+  <p><strong>Industry:</strong> ${projectData.stage1.businessVertical}</p>
+  <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+  <hr/>
+
+  <h2>Business Nature</h2>
+  <div class="section">
+    <p>${bf.businessNature}</p>
+  </div>
+
+  <h2>Mission & Vision</h2>
+  <div class="grid">
+    <div class="card">
+      <h4>🎯 Mission</h4>
+      <p>${bf.mission}</p>
+    </div>
+    <div class="card">
+      <h4>🌟 Vision</h4>
+      <p>${bf.vision}</p>
+    </div>
+  </div>
+
+  <h2>Core Values</h2>
+  <div class="section">
+    ${bf.values.map(v => `<span class="value-tag">${v}</span>`).join('')}
+  </div>
+
+  <h2>Target Audience Intelligence</h2>
+  <div class="section">
+    <div class="grid">
+      <div class="card">
+        <h4>📊 Demographics</h4>
+        <p>${bf.targetAudience.demographic}</p>
+      </div>
+      <div class="card">
+        <h4>🧠 Psychographics</h4>
+        <p>${bf.targetAudience.psychographic}</p>
+      </div>
+    </div>
+    <div class="grid" style="margin-top: 10px;">
+      <div class="card">
+        <h4>😰 Pain Points</h4>
+        <ul>${bf.targetAudience.painPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="card">
+        <h4>✨ Aspirations</h4>
+        <ul>${bf.targetAudience.aspirations.map(a => `<li>${a}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 10px;">
+      <h4>📱 Content Habits</h4>
+      <p>${bf.targetAudience.contentHabits}</p>
+    </div>
+  </div>
+
+  <h2>Unique Value Proposition</h2>
+  <div class="section">
+    <p style="font-weight: 600; margin-bottom: 10px; font-size: 16px;">${bf.uniqueValue.primary}</p>
+    <div class="grid">
+      <div class="card">
+        <h4>Supporting Points</h4>
+        <ul>${bf.uniqueValue.supporting.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>
+      <div class="card">
+        <h4>Proof Points</h4>
+        <ul>${bf.uniqueValue.proofPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>Brand Voice & Personality</h2>
+  <div class="section">
+    <p style="margin-bottom: 10px;">${bf.brandVoice.description}</p>
+    <div class="grid">
+      <div class="card">
+        <h4>Tone Attributes</h4>
+        <p>${bf.brandVoice.toneAttributes.join(', ')}</p>
+      </div>
+      <div class="card">
+        <h4>✅ Do</h4>
+        <ul>${bf.brandVoice.doStatements.map(d => `<li>${d}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="grid" style="margin-top: 10px;">
+      <div class="card">
+        <h4>❌ Don't</h4>
+        <ul>${bf.brandVoice.dontStatements.map(d => `<li>${d}</li>`).join('')}</ul>
+      </div>
+      <div class="card">
+        <h4>Example</h4>
+        <p><em>"${bf.brandVoice.example}"</em></p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Competitive Advantages</h2>
+  ${bf.competitiveAdvantages.map((adv, i) => `
+    <div class="section">
+      <h3>${i + 1}. ${adv.advantage}</h3>
+      <p>${adv.description}</p>
+      <p style="font-size: 12px; color: #b45309;"><strong>Impact:</strong> ${adv.impact}</p>
+    </div>
+  `).join('')}
+
+  <h2>Strategic Priorities</h2>
+  ${bf.strategicPriorities.map((priority, i) => `
+    <div class="section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="margin: 0;">${i + 1}. ${priority.priority}</h3>
+        <span style="font-size: 11px; padding: 3px 8px; background: #e0e7ff; color: #4338ca; border-radius: 10px; font-weight: 600;">${priority.timeline}</span>
+      </div>
+      <p>${priority.description}</p>
+      <p style="font-size: 12px; color: #4338ca;"><strong>Expected Impact:</strong> ${priority.impact}</p>
+    </div>
+  `).join('')}
+
+  <h2>Industry Context: ${projectData.stage1.businessVertical}</h2>
+  <div class="section">
+    <h4>📈 Trends</h4>
+    <ul>${bf.industryContext.trends.map(t => `<li>${t}</li>`).join('')}</ul>
+    <h4 style="margin-top: 15px;">💡 Opportunities</h4>
+    <ul>${bf.industryContext.opportunities.map(o => `<li>${o}</li>`).join('')}</ul>
+    <h4 style="margin-top: 15px;">⚠️ Challenges</h4>
+    <ul>${bf.industryContext.challenges.map(c => `<li>${c}</li>`).join('')}</ul>
+  </div>
+
+  <h2>Strategic Campaign Recommendations (${campaigns.length} Campaigns)</h2>
+  ${campaigns.map((campaign, i) => `
+    <div class="section">
+      <h3>${i + 1}. ${campaign.name}</h3>
+      <div style="margin: 8px 0;">
+        <span style="font-size: 11px; padding: 3px 8px; margin-right: 5px; background: #ffe4e6; color: #be123c; border-radius: 10px; font-weight: 600;">${campaign.objective}</span>
+        <span style="font-size: 11px; padding: 3px 8px; margin-right: 5px; background: #f3e8ff; color: #6b21a8; border-radius: 10px; font-weight: 600;">${campaign.duration}</span>
+        <span style="font-size: 11px; padding: 3px 8px; background: #fef3c7; color: #b45309; border-radius: 10px; font-weight: 600;">${campaign.budget} Budget</span>
+      </div>
+      <p style="margin: 10px 0;">${campaign.description}</p>
+      <div class="grid">
+        <div class="card">
+          <h4>🎯 Target</h4>
+          <p>${campaign.targetSegment}</p>
+        </div>
+        <div class="card">
+          <h4>💬 Key Message</h4>
+          <p>${campaign.keyMessage}</p>
+        </div>
+      </div>
+      <div style="margin-top: 10px;">
+        <h4>Platforms</h4>
+        <p>${campaign.platforms.join(', ')}</p>
+        <h4>Content Types</h4>
+        <p>${campaign.contentTypes.join(', ')}</p>
+        <h4>KPIs</h4>
+        <p>${campaign.kpis.join(', ')}</p>
+      </div>
+    </div>
+  `).join('')}
+
+  <div style="margin-top: 40px; padding: 15px; text-align: center; color: #6b7280; border-top: 1px solid #e5e7eb;">
+    <p>Generated by V28 AI Content Platform</p>
+  </div>
+</body>
+</html>
+    `;
+
+    downloadPDF(pdfHTML);
+  };
+
+  const downloadStage1DOC = () => {
+    if (!projectData.stage1.brandFundamentals) {
+      alert('No brand analysis data to download');
+      return;
+    }
+
+    const bf = projectData.stage1.brandFundamentals;
+    const campaigns = projectData.stage1.campaigns;
+
+    let docContent = '<h1>Brand Analysis Report</h1>';
+    docContent += `<p><strong>Website:</strong> ${projectData.stage1.websiteUrl}</p>`;
+    docContent += `<p><strong>Industry:</strong> ${projectData.stage1.businessVertical}</p>`;
+    docContent += `<p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p><hr/>`;
+
+    docContent += '<h2>Business Nature</h2>';
+    docContent += `<p>${bf.businessNature}</p>`;
+
+    docContent += '<h2>Mission</h2>';
+    docContent += `<p>${bf.mission}</p>`;
+
+    docContent += '<h2>Vision</h2>';
+    docContent += `<p>${bf.vision}</p>`;
+
+    docContent += '<h2>Core Values</h2>';
+    docContent += `<p>${bf.values.join(' • ')}</p>`;
+
+    docContent += '<h2>Target Audience Intelligence</h2>';
+    docContent += `<p><strong>Demographics:</strong> ${bf.targetAudience.demographic}</p>`;
+    docContent += `<p><strong>Psychographics:</strong> ${bf.targetAudience.psychographic}</p>`;
+    docContent += '<p><strong>Pain Points:</strong></p><ul>';
+    bf.targetAudience.painPoints.forEach(p => {
+      docContent += `<li>${p}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += '<p><strong>Aspirations:</strong></p><ul>';
+    bf.targetAudience.aspirations.forEach(a => {
+      docContent += `<li>${a}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += `<p><strong>Content Habits:</strong> ${bf.targetAudience.contentHabits}</p>`;
+
+    docContent += '<h2>Unique Value Proposition</h2>';
+    docContent += `<p>${bf.uniqueValue.primary}</p>`;
+    docContent += '<p><strong>Supporting Points:</strong></p><ul>';
+    bf.uniqueValue.supporting.forEach(s => {
+      docContent += `<li>${s}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += '<p><strong>Proof Points:</strong></p><ul>';
+    bf.uniqueValue.proofPoints.forEach(p => {
+      docContent += `<li>${p}</li>`;
+    });
+    docContent += '</ul>';
+
+    docContent += '<h2>Brand Voice & Personality</h2>';
+    docContent += `<p>${bf.brandVoice.description}</p>`;
+    docContent += '<p><strong>Tone Attributes:</strong></p>';
+    docContent += `<p>${bf.brandVoice.toneAttributes.join(', ')}</p>`;
+    docContent += '<p><strong>Do:</strong></p><ul>';
+    bf.brandVoice.doStatements.forEach(d => {
+      docContent += `<li>${d}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += '<p><strong>Don\'t:</strong></p><ul>';
+    bf.brandVoice.dontStatements.forEach(d => {
+      docContent += `<li>${d}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += `<p><strong>Example:</strong> "${bf.brandVoice.example}"</p>`;
+
+    docContent += '<h2>Competitive Advantages</h2>';
+    bf.competitiveAdvantages.forEach((adv, i) => {
+      docContent += `<h3>${i + 1}. ${adv.advantage}</h3>`;
+      docContent += `<p>${adv.description}</p>`;
+      docContent += `<p><strong>Impact:</strong> ${adv.impact}</p>`;
+    });
+
+    docContent += '<h2>Strategic Priorities</h2>';
+    bf.strategicPriorities.forEach((priority, i) => {
+      docContent += `<h3>${i + 1}. ${priority.priority}</h3>`;
+      docContent += `<p><strong>Timeline:</strong> ${priority.timeline}</p>`;
+      docContent += `<p>${priority.description}</p>`;
+      docContent += `<p><strong>Expected Impact:</strong> ${priority.impact}</p>`;
+    });
+
+    docContent += `<h2>Industry Context: ${projectData.stage1.businessVertical}</h2>`;
+    docContent += '<p><strong>Trends:</strong></p><ul>';
+    bf.industryContext.trends.forEach(t => {
+      docContent += `<li>${t}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += '<p><strong>Opportunities:</strong></p><ul>';
+    bf.industryContext.opportunities.forEach(o => {
+      docContent += `<li>${o}</li>`;
+    });
+    docContent += '</ul>';
+    docContent += '<p><strong>Challenges:</strong></p><ul>';
+    bf.industryContext.challenges.forEach(c => {
+      docContent += `<li>${c}</li>`;
+    });
+    docContent += '</ul>';
+
+    docContent += `<h2>Strategic Campaign Recommendations (${campaigns.length} Campaigns)</h2>`;
+    campaigns.forEach((campaign, i) => {
+      docContent += `<h3>${i + 1}. ${campaign.name}</h3>`;
+      docContent += `<p><strong>Objective:</strong> ${campaign.objective}</p>`;
+      docContent += `<p><strong>Duration:</strong> ${campaign.duration}</p>`;
+      docContent += `<p><strong>Budget:</strong> ${campaign.budget}</p>`;
+      docContent += `<p>${campaign.description}</p>`;
+      docContent += `<p><strong>Target Segment:</strong> ${campaign.targetSegment}</p>`;
+      docContent += `<p><strong>Key Message:</strong> ${campaign.keyMessage}</p>`;
+      docContent += `<p><strong>Platforms:</strong> ${campaign.platforms.join(', ')}</p>`;
+      docContent += `<p><strong>Content Types:</strong> ${campaign.contentTypes.join(', ')}</p>`;
+      docContent += `<p><strong>KPIs:</strong> ${campaign.kpis.join(', ')}</p><br/>`;
+    });
+
+    downloadDOC('Brand_Analysis.doc', docContent);
+  };
+
+  const downloadStage1CSV = () => {
+    if (!projectData.stage1.brandFundamentals) {
+      alert('No brand analysis data to download');
+      return;
+    }
+
+    const bf = projectData.stage1.brandFundamentals;
+    const campaigns = projectData.stage1.campaigns;
+
+    const escapeCSV = (str: string) => {
+      if (!str) return '';
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    let csvContent = 'Section,Field,Content\n';
+
+    // Basic Info
+    csvContent += `Basic Info,Website,${escapeCSV(projectData.stage1.websiteUrl)}\n`;
+    csvContent += `Basic Info,Industry,${escapeCSV(projectData.stage1.businessVertical)}\n`;
+    csvContent += `Basic Info,Business Nature,${escapeCSV(bf.businessNature)}\n`;
+
+    // Mission & Vision
+    csvContent += `Mission & Vision,Mission,${escapeCSV(bf.mission)}\n`;
+    csvContent += `Mission & Vision,Vision,${escapeCSV(bf.vision)}\n`;
+
+    // Core Values
+    bf.values.forEach((value, i) => {
+      csvContent += `Core Values,Value ${i + 1},${escapeCSV(value)}\n`;
+    });
+
+    // Target Audience
+    csvContent += `Target Audience,Demographics,${escapeCSV(bf.targetAudience.demographic)}\n`;
+    csvContent += `Target Audience,Psychographics,${escapeCSV(bf.targetAudience.psychographic)}\n`;
+    bf.targetAudience.painPoints.forEach((pain, i) => {
+      csvContent += `Target Audience,Pain Point ${i + 1},${escapeCSV(pain)}\n`;
+    });
+    bf.targetAudience.aspirations.forEach((asp, i) => {
+      csvContent += `Target Audience,Aspiration ${i + 1},${escapeCSV(asp)}\n`;
+    });
+    csvContent += `Target Audience,Content Habits,${escapeCSV(bf.targetAudience.contentHabits)}\n`;
+
+    // UVP
+    csvContent += `Value Proposition,Primary UVP,${escapeCSV(bf.uniqueValue.primary)}\n`;
+    bf.uniqueValue.supporting.forEach((point, i) => {
+      csvContent += `Value Proposition,Supporting Point ${i + 1},${escapeCSV(point)}\n`;
+    });
+    bf.uniqueValue.proofPoints.forEach((proof, i) => {
+      csvContent += `Value Proposition,Proof Point ${i + 1},${escapeCSV(proof)}\n`;
+    });
+
+    // Brand Voice
+    csvContent += `Brand Voice,Description,${escapeCSV(bf.brandVoice.description)}\n`;
+    bf.brandVoice.toneAttributes.forEach((attr, i) => {
+      csvContent += `Brand Voice,Tone Attribute ${i + 1},${escapeCSV(attr)}\n`;
+    });
+    bf.brandVoice.doStatements.forEach((stmt, i) => {
+      csvContent += `Brand Voice,Do ${i + 1},${escapeCSV(stmt)}\n`;
+    });
+    bf.brandVoice.dontStatements.forEach((stmt, i) => {
+      csvContent += `Brand Voice,Don't ${i + 1},${escapeCSV(stmt)}\n`;
+    });
+    csvContent += `Brand Voice,Example,${escapeCSV(bf.brandVoice.example)}\n`;
+
+    // Competitive Advantages
+    bf.competitiveAdvantages.forEach((adv, i) => {
+      csvContent += `Competitive Advantage ${i + 1},Name,${escapeCSV(adv.advantage)}\n`;
+      csvContent += `Competitive Advantage ${i + 1},Description,${escapeCSV(adv.description)}\n`;
+      csvContent += `Competitive Advantage ${i + 1},Impact,${escapeCSV(adv.impact)}\n`;
+    });
+
+    // Strategic Priorities
+    bf.strategicPriorities.forEach((priority, i) => {
+      csvContent += `Strategic Priority ${i + 1},Name,${escapeCSV(priority.priority)}\n`;
+      csvContent += `Strategic Priority ${i + 1},Description,${escapeCSV(priority.description)}\n`;
+      csvContent += `Strategic Priority ${i + 1},Timeline,${escapeCSV(priority.timeline)}\n`;
+      csvContent += `Strategic Priority ${i + 1},Impact,${escapeCSV(priority.impact)}\n`;
+    });
+
+    // Industry Context
+    bf.industryContext.trends.forEach((trend, i) => {
+      csvContent += `Industry Context,Trend ${i + 1},${escapeCSV(trend)}\n`;
+    });
+    bf.industryContext.opportunities.forEach((opp, i) => {
+      csvContent += `Industry Context,Opportunity ${i + 1},${escapeCSV(opp)}\n`;
+    });
+    bf.industryContext.challenges.forEach((challenge, i) => {
+      csvContent += `Industry Context,Challenge ${i + 1},${escapeCSV(challenge)}\n`;
+    });
+
+    // Campaigns
+    campaigns.forEach((campaign, i) => {
+      csvContent += `Campaign ${i + 1},Name,${escapeCSV(campaign.name)}\n`;
+      csvContent += `Campaign ${i + 1},Objective,${escapeCSV(campaign.objective)}\n`;
+      csvContent += `Campaign ${i + 1},Duration,${escapeCSV(campaign.duration)}\n`;
+      csvContent += `Campaign ${i + 1},Budget,${escapeCSV(campaign.budget)}\n`;
+      csvContent += `Campaign ${i + 1},Description,${escapeCSV(campaign.description)}\n`;
+      csvContent += `Campaign ${i + 1},Target,${escapeCSV(campaign.targetSegment)}\n`;
+      csvContent += `Campaign ${i + 1},Key Message,${escapeCSV(campaign.keyMessage)}\n`;
+      csvContent += `Campaign ${i + 1},Platforms,${escapeCSV(campaign.platforms.join(', '))}\n`;
+      csvContent += `Campaign ${i + 1},Content Types,${escapeCSV(campaign.contentTypes.join(', '))}\n`;
+      csvContent += `Campaign ${i + 1},KPIs,${escapeCSV(campaign.kpis.join(', '))}\n`;
+    });
+
+    downloadCSV('Brand_Analysis.csv', csvContent);
+  };
+
+  const downloadStage3 = () => {
+    if (projectData.stage2.generatedContents.length === 0) {
+      alert('No generated content to download');
+      return;
+    }
+
+    const renderContentHTML = (content: GeneratedContent): string => {
+      // CAROUSEL
+      if (content.contentStructure === 'multi-slide' && content.slides) {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.slides.map((slide: Slide) => `
+              <div style="padding: 16px; margin: 12px 0; border-radius: 8px; border: 2px solid ${
+                slide.type === 'cover' ? '#a78bfa' :
+                slide.type === 'cta' ? '#86efac' :
+                '#93c5fd'
+              }; background: ${
+                slide.type === 'cover' ? '#faf5ff' :
+                slide.type === 'cta' ? '#f0fdf4' :
+                '#eff6ff'
+              };">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div style="width: 32px; height: 32px; background: #1f2937; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">${slide.slideNumber}</div>
+                  <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280;">${slide.type || 'content'}</span>
+                </div>
+                <h5 style="font-weight: 700; margin-bottom: 4px; font-size: 16px;">${slide.headline}</h5>
+                ${slide.subheadline ? `<p style="font-size: 14px; margin-bottom: 8px;">${slide.subheadline}</p>` : ''}
+                ${slide.content ? `<p style="font-size: 14px; margin-bottom: 8px;">${slide.content}</p>` : ''}
+                ${slide.cta ? `<p style="font-weight: 700; color: #059669; font-size: 14px;">👉 ${slide.cta}</p>` : ''}
+                <p style="font-size: 12px; color: #6b7280; font-style: italic; margin-top: 8px;">Visual: ${slide.visualDirection}</p>
+              </div>
+            `).join('')}
+            ${content.caption ? `
+              <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 12px;">
+                <p style="font-size: 11px; font-weight: 700; margin-bottom: 8px; color: #374151;">CAPTION</p>
+                <p style="font-size: 14px;">${content.caption}</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // INFOGRAPHIC
+      if (content.contentStructure === 'data-visual' && content.dataPoints) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: linear-gradient(to right, #eff6ff, #f3e8ff); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+              <h5 style="font-weight: 700; font-size: 20px; margin-bottom: 4px;">${content.title}</h5>
+              ${content.subtitle ? `<p style="font-size: 14px; color: #4b5563;">${content.subtitle}</p>` : ''}
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              ${content.dataPoints.map((point: DataPoint) => `
+                <div style="background: white; padding: 16px; border-radius: 8px; border: 2px solid #e5e7eb;">
+                  <div style="font-size: 30px; font-weight: 700; color: #2563eb; margin-bottom: 8px;">${point.statistic}</div>
+                  <p style="font-size: 14px; margin-bottom: 4px;">${point.description}</p>
+                  <p style="font-size: 12px; color: #6b7280;">Source: ${point.source}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // THREAD
+      if (content.contentStructure === 'thread' && content.tweets) {
+        return `
+          <div style="margin-bottom: 8px;">
+            ${content.tweets.map((tweet: Tweet) => {
+              const isOver = (tweet.characterCount ?? 0) > 280;
+              return `
+                <div style="padding: 12px; margin: 8px 0; border-radius: 8px; border: 2px solid ${isOver ? '#fca5a5' : '#93c5fd'}; background: ${isOver ? '#fee2e2' : '#eff6ff'};">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12px; font-weight: 600;">Tweet ${tweet.tweetNumber}</span>
+                    <span style="font-size: 12px; font-weight: 700; color: ${isOver ? '#dc2626' : '#059669'};">${tweet.characterCount}/280</span>
+                  </div>
+                  <p style="font-size: 14px;">${tweet.content}</p>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      // VIDEO SCRIPT
+      if (content.contentStructure === 'video-script' && content.script) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border: 2px solid #fbbf24; margin: 12px 0;">
+              <h5 style="font-weight: 700; font-size: 14px; margin-bottom: 8px;">🎬 HOOK (${content.script.hook.timing})</h5>
+              <p style="font-size: 14px; margin-bottom: 4px;"><strong>Voiceover:</strong> ${content.script.hook.voiceover}</p>
+              <p style="font-size: 12px; color: #4b5563;"><strong>Visual:</strong> ${content.script.hook.visual}</p>
+              <p style="font-size: 12px; color: #4b5563;"><strong>Text:</strong> ${content.script.hook.textOverlay}</p>
+            </div>
+            ${content.script.content.map((seg: ScriptSegment, idx: number) => `
+              <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin: 12px 0;">
+                <h5 style="font-weight: 700; font-size: 14px; margin-bottom: 8px;">📹 SEGMENT ${idx + 1} (${seg.timing})</h5>
+                <p style="font-size: 14px; margin-bottom: 4px;"><strong>Voiceover:</strong> ${seg.voiceover}</p>
+                <p style="font-size: 12px; color: #4b5563;"><strong>Visual:</strong> ${seg.visual}</p>
+              </div>
+            `).join('')}
+            <div style="background: #d1fae5; padding: 16px; border-radius: 8px; border: 2px solid #34d399; margin: 12px 0;">
+              <h5 style="font-weight: 700; font-size: 14px; margin-bottom: 8px;">📢 CTA (${content.script.cta.timing})</h5>
+              <p style="font-size: 14px;">${content.script.cta.voiceover}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      // STORY FRAMES
+      if (content.contentStructure === 'story-frames' && content.frames) {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.frames.map((frame: Frame) => `
+              <div style="padding: 16px; margin: 12px 0; border-radius: 8px; border: 2px solid ${
+                frame.type === 'opener' ? '#a78bfa' :
+                frame.type === 'cta' ? '#86efac' :
+                '#93c5fd'
+              }; background: ${
+                frame.type === 'opener' ? '#faf5ff' :
+                frame.type === 'cta' ? '#f0fdf4' :
+                '#eff6ff'
+              };">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div style="width: 32px; height: 32px; background: #1f2937; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">${frame.frameNumber}</div>
+                  <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280;">${frame.type}</span>
+                </div>
+                <p style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">${frame.text}</p>
+                <p style="font-size: 12px; color: #4b5563;">📸 ${frame.visual}</p>
+                <p style="font-size: 12px; color: #9333ea;">💫 ${frame.interactive}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // EMAIL
+      if (content.contentStructure === 'email' && content.subjectLine) {
+        const body = content.body as EmailBody;
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: #faf5ff; padding: 16px; border-radius: 8px; border: 2px solid #c084fc; margin-bottom: 12px;">
+              <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📧 SUBJECT</p>
+              <p style="font-size: 18px; font-weight: 700;">${content.subjectLine}</p>
+              ${content.preheader ? `<p style="font-size: 14px; color: #4b5563; margin-top: 8px;">${content.preheader}</p>` : ''}
+            </div>
+            ${body ? `
+              <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <p style="font-size: 14px; margin-bottom: 8px;">${body.greeting}</p>
+                <p style="font-size: 14px; margin-bottom: 12px;">${body.opening}</p>
+                <p style="font-size: 14px; margin-bottom: 12px;">${body.mainContent}</p>
+                ${body.benefits ? `
+                  <ul style="margin-bottom: 12px; padding-left: 0; list-style: none;">
+                    ${body.benefits.map((b: string) => `
+                      <li style="font-size: 14px; display: flex; gap: 8px; margin-bottom: 4px;">
+                        <span style="color: #059669;">✓</span>
+                        <span>${b}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : ''}
+                <div style="text-align: center; margin: 16px 0;">
+                  <button style="padding: 12px 24px; background: #2563eb; color: white; border-radius: 8px; font-weight: 600; border: none; font-size: 14px;">${body.cta}</button>
+                </div>
+                <p style="font-size: 14px;">${body.closing}</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // BLOG
+      if (content.contentStructure === 'long-form' && content.sections) {
+        return `
+          <div style="margin-bottom: 16px;">
+            <div style="background: #eef2ff; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+              <h5 style="font-weight: 700; font-size: 24px; margin-bottom: 8px;">${content.title}</h5>
+              ${content.metaDescription ? `<p style="font-size: 14px; font-style: italic;">${content.metaDescription}</p>` : ''}
+            </div>
+            ${content.introduction ? `
+              <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 12px;">
+                <p style="font-size: 14px;">${content.introduction}</p>
+              </div>
+            ` : ''}
+            ${content.sections.map((sec: Section) => `
+              <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin: 12px 0;">
+                <h6 style="font-weight: 700; font-size: 18px; margin-bottom: 8px;">${sec.heading}</h6>
+                <p style="font-size: 14px; margin-bottom: 8px;">${sec.content}</p>
+                ${sec.keyPoints ? `
+                  <ul style="padding-left: 0; list-style: none; margin-top: 8px;">
+                    ${sec.keyPoints.map((p: string) => `
+                      <li style="font-size: 14px; display: flex; gap: 8px; margin-bottom: 4px;">
+                        <span>•</span>
+                        <span>${p}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // AD
+      if (content.contentStructure === 'ad' && content.headline) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border: 2px solid #fbbf24; margin-bottom: 12px;">
+              <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📢 HEADLINE</p>
+              <p style="font-size: 20px; font-weight: 700;">${content.headline}</p>
+            </div>
+            ${content.primaryText ? `
+              <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 14px;">${content.primaryText}</p>
+              </div>
+            ` : ''}
+            <div style="text-align: center; margin: 12px 0;">
+              <button style="padding: 12px 24px; background: #2563eb; color: white; border-radius: 8px; font-weight: 700; border: none; font-size: 14px;">${content.cta}</button>
+            </div>
+          </div>
+        `;
+      }
+
+      // DEFAULT SINGLE POST
+      return `
+        <div style="margin-bottom: 16px;">
+          ${content.hook ? `
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 12px 0;">
+              <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">🪝 HOOK</p>
+              <p style="font-size: 14px;">${content.hook}</p>
+            </div>
+          ` : ''}
+          ${content.body && typeof content.body === 'string' ? `
+            <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin: 12px 0;">
+              <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📝 CONTENT</p>
+              <p style="font-size: 14px;">${content.body}</p>
+            </div>
+          ` : ''}
+          ${content.cta ? `
+            <div style="background: #d1fae5; padding: 16px; border-radius: 8px; margin: 12px 0;">
+              <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📢 CTA</p>
+              <p style="font-size: 14px; font-weight: 600;">${content.cta}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    };
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generated Content</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 1200px; margin: 0 auto; padding: 24px; background: linear-gradient(to bottom right, #fff7ed, #fed7aa); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    h1, h2, h3, h4, h5, h6, p { margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(to right, #fff7ed, #fed7aa); padding: 24px; border-radius: 12px; border: 1px solid #fb923c; margin-bottom: 24px;">
+    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">AI Content Writer</h2>
+    <p style="color: #4b5563; font-size: 14px;">Review and refine your generated content</p>
+  </div>
+
+  <div style="background: #d1fae5; padding: 16px; border-radius: 8px; border: 2px solid #86efac; margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 24px;">✅</span>
+      <p style="font-weight: 600; color: #065f46;">${projectData.stage2.generatedContents.length} content pieces loaded and ready</p>
+    </div>
+  </div>
+
+  ${projectData.stage2.generatedContents.map((content: GeneratedContent) => `
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 2px solid #e5e7eb; margin-bottom: 16px; page-break-inside: avoid;">
+      <div style="display: flex; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 2px solid #f3f4f6;">
+        <div style="width: 48px; height: 48px; background: #ea580c; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0;">
+          #${content.contentNumber}
+        </div>
+        <div style="flex: 1;">
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${content.title}</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 12px; padding: 4px 8px; background: #fed7aa; color: #9a3412; border-radius: 4px; font-weight: 600;">${content.platform}</span>
+            <span style="font-size: 12px; padding: 4px 8px; background: #bfdbfe; color: #1e3a8a; border-radius: 4px; font-weight: 600;">${content.contentType}</span>
+          </div>
+        </div>
+      </div>
+      
+      ${renderContentHTML(content)}
+      
+      ${content.hashtags && content.hashtags.length > 0 ? `
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;"># HASHTAGS</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            ${content.hashtags.map((tag: string) => `<span style="font-size: 14px; padding: 4px 12px; background: #f3f4f6; border-radius: 20px;">#${tag}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `).join('')}
+
+  <div style="margin-top: 32px; background: linear-gradient(to right, #d1fae5, #a7f3d0); padding: 24px; border-radius: 12px; border: 2px solid #86efac; text-align: center;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+      <span style="font-size: 32px;">✅</span>
+      <h3 style="font-size: 24px; font-weight: 700; color: #065f46;">Content Creation Complete!</h3>
+    </div>
+    <p style="color: #047857;">Your AI-generated content is ready for use. You can copy, edit, and share your content across all selected platforms.</p>
+  </div>
+
+  <div style="margin-top: 40px; padding: 20px; background: white; border-radius: 8px; text-align: center; border: 1px solid #cbd5e1;">
+    <p style="color: #6b7280;">Generated by V28 AI Content Platform</p>
+  </div>
+</body>
+</html>
+    `;
+
+    downloadHTML('Generated_Content.html', htmlContent);
+  };
+
+  const downloadStage3DOC = () => {
+    if (projectData.stage2.generatedContents.length === 0) {
+      alert('No generated content to download');
+      return;
+    }
+
+    const renderContentDOC = (content: GeneratedContent): string => {
+      let docContent = `<h3>#${content.contentNumber} - ${content.title}</h3>`;
+      docContent += `<p><strong>Platform:</strong> ${content.platform} | <strong>Type:</strong> ${content.contentType}</p><hr/>`;
+
+      // CAROUSEL
+      if (content.contentStructure === 'multi-slide' && content.slides) {
+        content.slides.forEach((slide: Slide) => {
+          docContent += `<h4>Slide ${slide.slideNumber} (${slide.type || 'content'})</h4>`;
+          docContent += `<p><strong>${slide.headline}</strong></p>`;
+          if (slide.subheadline) docContent += `<p>${slide.subheadline}</p>`;
+          if (slide.content) docContent += `<p>${slide.content}</p>`;
+          if (slide.cta) docContent += `<p><strong>CTA:</strong> ${slide.cta}</p>`;
+          docContent += `<p><em>Visual: ${slide.visualDirection}</em></p><br/>`;
+        });
+        if (content.caption) docContent += `<p><strong>Caption:</strong> ${content.caption}</p>`;
+      }
+      // INFOGRAPHIC
+      else if (content.contentStructure === 'data-visual' && content.dataPoints) {
+        docContent += `<h4>${content.title}</h4>`;
+        if (content.subtitle) docContent += `<p>${content.subtitle}</p>`;
+        content.dataPoints.forEach((point: DataPoint) => {
+          docContent += `<p><strong>${point.statistic}</strong> - ${point.description}</p>`;
+          docContent += `<p><em>Source: ${point.source}</em></p>`;
+        });
+      }
+      // THREAD
+      else if (content.contentStructure === 'thread' && content.tweets) {
+        content.tweets.forEach((tweet: Tweet) => {
+          docContent += `<p><strong>Tweet ${tweet.tweetNumber}</strong> (${tweet.characterCount}/280):</p>`;
+          docContent += `<p>${tweet.content}</p><br/>`;
+        });
+      }
+      // VIDEO SCRIPT
+      else if (content.contentStructure === 'video-script' && content.script) {
+        docContent += `<h4>HOOK (${content.script.hook.timing})</h4>`;
+        docContent += `<p><strong>Voiceover:</strong> ${content.script.hook.voiceover}</p>`;
+        docContent += `<p><strong>Visual:</strong> ${content.script.hook.visual}</p>`;
+        docContent += `<p><strong>Text:</strong> ${content.script.hook.textOverlay}</p><br/>`;
+        content.script.content.forEach((seg: ScriptSegment, idx: number) => {
+          docContent += `<h4>SEGMENT ${idx + 1} (${seg.timing})</h4>`;
+          docContent += `<p><strong>Voiceover:</strong> ${seg.voiceover}</p>`;
+          docContent += `<p><strong>Visual:</strong> ${seg.visual}</p><br/>`;
+        });
+        docContent += `<h4>CTA (${content.script.cta.timing})</h4>`;
+        docContent += `<p>${content.script.cta.voiceover}</p>`;
+      }
+      // STORY FRAMES
+      else if (content.contentStructure === 'story-frames' && content.frames) {
+        content.frames.forEach((frame: Frame) => {
+          docContent += `<h4>Frame ${frame.frameNumber} (${frame.type})</h4>`;
+          docContent += `<p>${frame.text}</p>`;
+          docContent += `<p><em>Visual: ${frame.visual}</em></p>`;
+          docContent += `<p><em>Interactive: ${frame.interactive}</em></p><br/>`;
+        });
+      }
+      // EMAIL
+      else if (content.contentStructure === 'email' && content.subjectLine) {
+        docContent += `<p><strong>Subject:</strong> ${content.subjectLine}</p>`;
+        if (content.preheader) docContent += `<p><strong>Preheader:</strong> ${content.preheader}</p>`;
+        const body = content.body as EmailBody;
+        if (body) {
+          docContent += `<p>${body.greeting}</p>`;
+          docContent += `<p>${body.opening}</p>`;
+          docContent += `<p>${body.mainContent}</p>`;
+          if (body.benefits) {
+            docContent += '<ul>';
+            body.benefits.forEach((b: string) => {
+              docContent += `<li>${b}</li>`;
+            });
+            docContent += '</ul>';
+          }
+          docContent += `<p><strong>CTA:</strong> ${body.cta}</p>`;
+          docContent += `<p>${body.closing}</p>`;
+        }
+        if (content.ps) docContent += `<p><strong>P.S.</strong> ${content.ps}</p>`;
+      }
+      // BLOG
+      else if (content.contentStructure === 'long-form' && content.sections) {
+        docContent += `<h4>${content.title}</h4>`;
+        if (content.metaDescription) docContent += `<p><em>${content.metaDescription}</em></p>`;
+        if (content.introduction) docContent += `<p>${content.introduction}</p>`;
+        content.sections.forEach((sec: Section) => {
+          docContent += `<h4>${sec.heading}</h4>`;
+          docContent += `<p>${sec.content}</p>`;
+          if (sec.keyPoints) {
+            docContent += '<ul>';
+            sec.keyPoints.forEach((p: string) => {
+              docContent += `<li>${p}</li>`;
+            });
+            docContent += '</ul>';
+          }
+        });
+        if (content.conclusion) docContent += `<p>${content.conclusion}</p>`;
+      }
+      // AD
+      else if (content.contentStructure === 'ad' && content.headline) {
+        docContent += `<p><strong>Headline:</strong> ${content.headline}</p>`;
+        if (content.primaryText) docContent += `<p>${content.primaryText}</p>`;
+        if (content.description) docContent += `<p>${content.description}</p>`;
+        docContent += `<p><strong>CTA:</strong> ${content.cta}</p>`;
+      }
+      // DEFAULT POST
+      else {
+        if (content.hook) docContent += `<p><strong>Hook:</strong> ${content.hook}</p>`;
+        if (content.body && typeof content.body === 'string') docContent += `<p>${content.body}</p>`;
+        if (content.cta) docContent += `<p><strong>CTA:</strong> ${content.cta}</p>`;
+      }
+
+      if (content.hashtags && content.hashtags.length > 0) {
+        docContent += `<p><strong>Hashtags:</strong> ${content.hashtags.map(t => `#${t}`).join(' ')}</p>`;
+      }
+      
+      return docContent + '<br/><br/>';
+    };
+
+    let fullDoc = '<h1>Generated Content</h1>';
+    fullDoc += `<p><strong>Total Content Pieces:</strong> ${projectData.stage2.generatedContents.length}</p>`;
+    fullDoc += `<p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p><hr/>`;
+    
+    projectData.stage2.generatedContents.forEach((content: GeneratedContent) => {
+      fullDoc += renderContentDOC(content);
+    });
+
+    downloadDOC('Generated_Content.doc', fullDoc);
+  };
+
+  const downloadStage3CSV = () => {
+    if (projectData.stage2.generatedContents.length === 0) {
+      alert('No generated content to download');
+      return;
+    }
+
+    const escapeCSV = (str: string) => {
+      if (!str) return '';
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    let csvContent = 'Content Number,Title,Platform,Content Type,Structure,Full Content,Hashtags\n';
+
+    projectData.stage2.generatedContents.forEach((content: GeneratedContent) => {
+      let contentText = '';
+      
+      // CAROUSEL
+      if (content.contentStructure === 'multi-slide' && content.slides) {
+        contentText = content.slides.map((slide: Slide) => 
+          `Slide ${slide.slideNumber} (${slide.type || 'content'}): ${slide.headline}${slide.subheadline ? ' - ' + slide.subheadline : ''}${slide.content ? ' - ' + slide.content : ''}${slide.cta ? ' [CTA: ' + slide.cta + ']' : ''} [Visual: ${slide.visualDirection}]`
+        ).join(' || ');
+        if (content.caption) contentText += ` || Caption: ${content.caption}`;
+      } 
+      // INFOGRAPHIC
+      else if (content.contentStructure === 'data-visual' && content.dataPoints) {
+        contentText = `Title: ${content.title}${content.subtitle ? ' - ' + content.subtitle : ''} || `;
+        contentText += content.dataPoints.map((point: DataPoint) => 
+          `${point.statistic}: ${point.description} (Source: ${point.source})`
+        ).join(' || ');
+      }
+      // THREAD
+      else if (content.contentStructure === 'thread' && content.tweets) {
+        contentText = content.tweets.map((tweet: Tweet) => 
+          `Tweet ${tweet.tweetNumber} (${tweet.characterCount}/280): ${tweet.content}`
+        ).join(' || ');
+      }
+      // VIDEO SCRIPT
+      else if (content.contentStructure === 'video-script' && content.script) {
+        contentText = `HOOK (${content.script.hook.timing}): ${content.script.hook.voiceover} || `;
+        contentText += content.script.content.map((seg: ScriptSegment, idx: number) => 
+          `SEGMENT ${idx + 1} (${seg.timing}): ${seg.voiceover}`
+        ).join(' || ');
+        contentText += ` || CTA (${content.script.cta.timing}): ${content.script.cta.voiceover}`;
+        if (content.caption) contentText += ` || Caption: ${content.caption}`;
+      }
+      // STORY FRAMES
+      else if (content.contentStructure === 'story-frames' && content.frames) {
+        contentText = content.frames.map((frame: Frame) => 
+          `Frame ${frame.frameNumber} (${frame.type}): ${frame.text} [Visual: ${frame.visual}, Interactive: ${frame.interactive}]`
+        ).join(' || ');
+      }
+      // EMAIL
+      else if (content.contentStructure === 'email' && content.subjectLine) {
+        const body = content.body as EmailBody;
+        contentText = `Subject: ${content.subjectLine}`;
+        if (content.preheader) contentText += ` || Preheader: ${content.preheader}`;
+        if (body) {
+          contentText += ` || ${body.greeting} || ${body.opening} || ${body.mainContent}`;
+          if (body.benefits) contentText += ` || Benefits: ${body.benefits.join(', ')}`;
+          contentText += ` || CTA: ${body.cta} || ${body.closing}`;
+        }
+        if (content.ps) contentText += ` || P.S. ${content.ps}`;
+      }
+      // BLOG
+      else if (content.contentStructure === 'long-form' && content.sections) {
+        contentText = `Title: ${content.title}`;
+        if (content.metaDescription) contentText += ` || Meta: ${content.metaDescription}`;
+        if (content.introduction) contentText += ` || Intro: ${content.introduction}`;
+        contentText += ` || ` + content.sections.map((sec: Section) => 
+          `${sec.heading}: ${sec.content}${sec.keyPoints ? ' [' + sec.keyPoints.join(', ') + ']' : ''}`
+        ).join(' || ');
+        if (content.conclusion) contentText += ` || Conclusion: ${content.conclusion}`;
+        if (content.cta) contentText += ` || CTA: ${content.cta}`;
+      }
+      // AD
+      else if (content.contentStructure === 'ad' && content.headline) {
+        contentText = `Headline: ${content.headline}`;
+        if (content.primaryText) contentText += ` || ${content.primaryText}`;
+        if (content.description) contentText += ` || ${content.description}`;
+        contentText += ` || CTA: ${content.cta}`;
+      }
+      // DEFAULT POST
+      else {
+        const parts = [];
+        if (content.hook) parts.push(`Hook: ${content.hook}`);
+        if (content.body && typeof content.body === 'string') parts.push(`Body: ${content.body}`);
+        if (content.cta) parts.push(`CTA: ${content.cta}`);
+        contentText = parts.join(' || ');
+      }
+
+      const hashtags = content.hashtags ? content.hashtags.map(t => `#${t}`).join(' ') : '';
+
+      csvContent += `${content.contentNumber},${escapeCSV(content.title)},${escapeCSV(content.platform)},${escapeCSV(content.contentType)},${escapeCSV(content.contentStructure)},${escapeCSV(contentText)},${escapeCSV(hashtags)}\n`;
+    });
+
+    downloadCSV('Generated_Content.csv', csvContent);
+  };
+
+  const downloadStage3PDF = () => {
+    if (projectData.stage2.generatedContents.length === 0) {
+      alert('No generated content to download');
+      return;
+    }
+
+    const renderContentHTML = (content: GeneratedContent): string => {
+      // CAROUSEL
+      if (content.contentStructure === 'multi-slide' && content.slides) {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.slides.map((slide: Slide) => `
+              <div style="padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #cbd5e1; background: #f9fafb;">
+                <p style="margin-bottom: 6px;"><strong>Slide ${slide.slideNumber} (${slide.type || 'content'})</strong></p>
+                <p style="font-weight: 600; margin-bottom: 4px;">${slide.headline}</p>
+                ${slide.subheadline ? `<p style="font-size: 13px; margin-bottom: 6px;">${slide.subheadline}</p>` : ''}
+                ${slide.content ? `<p style="font-size: 13px; margin-bottom: 6px;">${slide.content}</p>` : ''}
+                ${slide.cta ? `<p style="font-weight: 600;">CTA: ${slide.cta}</p>` : ''}
+                <p style="font-size: 11px; color: #6b7280; font-style: italic;">Visual: ${slide.visualDirection}</p>
+              </div>
+            `).join('')}
+            ${content.caption ? `<p style="margin-top: 8px;"><strong>Caption:</strong> ${content.caption}</p>` : ''}
+          </div>
+        `;
+      }
+      // INFOGRAPHIC
+      else if (content.contentStructure === 'data-visual' && content.dataPoints) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <h4 style="margin-bottom: 8px;">${content.title}</h4>
+            ${content.subtitle ? `<p style="font-size: 13px; margin-bottom: 10px;">${content.subtitle}</p>` : ''}
+            ${content.dataPoints.map((point: DataPoint) => `
+              <div style="padding: 10px; margin: 6px 0; border: 1px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">
+                <p style="font-size: 18px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">${point.statistic}</p>
+                <p style="font-size: 13px; margin-bottom: 4px;">${point.description}</p>
+                <p style="font-size: 11px; color: #6b7280;">Source: ${point.source}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      // THREAD
+      else if (content.contentStructure === 'thread' && content.tweets) {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.tweets.map((tweet: Tweet) => `
+              <div style="padding: 10px; margin: 6px 0; border: 1px solid #cbd5e1; border-radius: 6px; background: #f9fafb;">
+                <p style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">Tweet ${tweet.tweetNumber} (${tweet.characterCount}/280)</p>
+                <p style="font-size: 13px;">${tweet.content}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      // VIDEO SCRIPT
+      else if (content.contentStructure === 'video-script' && content.script) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="padding: 10px; margin: 6px 0; background: #fef3c7; border-radius: 6px;">
+              <p style="font-weight: 600; margin-bottom: 4px;">HOOK (${content.script.hook.timing})</p>
+              <p style="font-size: 13px;"><strong>Voiceover:</strong> ${content.script.hook.voiceover}</p>
+              <p style="font-size: 12px;"><strong>Visual:</strong> ${content.script.hook.visual}</p>
+              <p style="font-size: 12px;"><strong>Text:</strong> ${content.script.hook.textOverlay}</p>
+            </div>
+            ${content.script.content.map((seg: ScriptSegment, idx: number) => `
+              <div style="padding: 10px; margin: 6px 0; background: #eff6ff; border-radius: 6px;">
+                <p style="font-weight: 600; margin-bottom: 4px;">SEGMENT ${idx + 1} (${seg.timing})</p>
+                <p style="font-size: 13px;"><strong>Voiceover:</strong> ${seg.voiceover}</p>
+                <p style="font-size: 12px;"><strong>Visual:</strong> ${seg.visual}</p>
+              </div>
+            `).join('')}
+            <div style="padding: 10px; margin: 6px 0; background: #d1fae5; border-radius: 6px;">
+              <p style="font-weight: 600; margin-bottom: 4px;">CTA (${content.script.cta.timing})</p>
+              <p style="font-size: 13px;">${content.script.cta.voiceover}</p>
+            </div>
+          </div>
+        `;
+      }
+      // STORY FRAMES
+      else if (content.contentStructure === 'story-frames' && content.frames) {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.frames.map((frame: Frame) => `
+              <div style="padding: 10px; margin: 6px 0; border: 1px solid #cbd5e1; border-radius: 6px; background: #f9fafb;">
+                <p style="font-weight: 600; margin-bottom: 4px;">Frame ${frame.frameNumber} (${frame.type})</p>
+                <p style="font-size: 13px; margin-bottom: 4px;">${frame.text}</p>
+                <p style="font-size: 11px; color: #6b7280;">Visual: ${frame.visual}</p>
+                <p style="font-size: 11px; color: #6b7280;">Interactive: ${frame.interactive}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      // EMAIL
+      else if (content.contentStructure === 'email' && content.subjectLine) {
+        const body = content.body as EmailBody;
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: #faf5ff; padding: 12px; border-radius: 6px; border: 1px solid #c084fc; margin-bottom: 10px;">
+              <p style="font-weight: 600; margin-bottom: 4px;">Subject: ${content.subjectLine}</p>
+              ${content.preheader ? `<p style="font-size: 13px; color: #6b7280;">${content.preheader}</p>` : ''}
+            </div>
+            ${body ? `
+              <div style="background: white; padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                <p style="margin-bottom: 8px;">${body.greeting}</p>
+                <p style="margin-bottom: 8px;">${body.opening}</p>
+                <p style="margin-bottom: 8px;">${body.mainContent}</p>
+                ${body.benefits ? `
+                  <ul style="margin-bottom: 8px;">
+                    ${body.benefits.map((b: string) => `<li>${b}</li>`).join('')}
+                  </ul>
+                ` : ''}
+                <p style="font-weight: 600; margin-bottom: 8px;">CTA: ${body.cta}</p>
+                <p>${body.closing}</p>
+              </div>
+            ` : ''}
+            ${content.ps ? `<p style="margin-top: 8px; font-style: italic;">P.S. ${content.ps}</p>` : ''}
+          </div>
+        `;
+      }
+      // BLOG
+      else if (content.contentStructure === 'long-form' && content.sections) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <h4 style="margin-bottom: 8px;">${content.title}</h4>
+            ${content.metaDescription ? `<p style="font-style: italic; font-size: 13px; margin-bottom: 10px;">${content.metaDescription}</p>` : ''}
+            ${content.introduction ? `<p style="margin-bottom: 10px;">${content.introduction}</p>` : ''}
+            ${content.sections.map((sec: Section) => `
+              <div style="margin-bottom: 10px;">
+                <h5 style="font-weight: 600; margin-bottom: 6px;">${sec.heading}</h5>
+                <p style="font-size: 13px; margin-bottom: 6px;">${sec.content}</p>
+                ${sec.keyPoints ? `
+                  <ul>
+                    ${sec.keyPoints.map((p: string) => `<li style="font-size: 13px;">${p}</li>`).join('')}
+                  </ul>
+                ` : ''}
+              </div>
+            `).join('')}
+            ${content.conclusion ? `<p style="margin-top: 10px;">${content.conclusion}</p>` : ''}
+          </div>
+        `;
+      }
+      // AD
+      else if (content.contentStructure === 'ad' && content.headline) {
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+              <p style="font-weight: 600; margin-bottom: 4px;">Headline</p>
+              <p style="font-size: 16px; font-weight: 700;">${content.headline}</p>
+            </div>
+            ${content.primaryText ? `<p style="margin-bottom: 8px;">${content.primaryText}</p>` : ''}
+            ${content.description ? `<p style="margin-bottom: 8px;">${content.description}</p>` : ''}
+            <p style="font-weight: 600;">CTA: ${content.cta}</p>
+          </div>
+        `;
+      }
+      // DEFAULT POST
+      else {
+        return `
+          <div style="margin-bottom: 12px;">
+            ${content.hook ? `
+              <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin: 8px 0;">
+                <p style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">HOOK</p>
+                <p style="font-size: 13px;">${content.hook}</p>
+              </div>
+            ` : ''}
+            ${content.body && typeof content.body === 'string' ? `
+              <div style="background: #eff6ff; padding: 12px; border-radius: 6px; margin: 8px 0;">
+                <p style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">CONTENT</p>
+                <p style="font-size: 13px;">${content.body}</p>
+              </div>
+            ` : ''}
+            ${content.cta ? `
+              <div style="background: #d1fae5; padding: 12px; border-radius: 6px; margin: 8px 0;">
+                <p style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">CTA</p>
+                <p style="font-size: 13px; font-weight: 600;">${content.cta}</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    };
+
+    const pdfHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generated Content - PDF</title>
+  <style>
+    @media print {
+      @page { margin: 1cm; }
+      body { margin: 0; }
+    }
+    body { 
+      font-family: Arial, Helvetica, sans-serif; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: white;
+    }
+    h1 { color: #1f2937; font-size: 28px; margin-bottom: 20px; }
+    .content-card { 
+      background: white; 
+      padding: 20px; 
+      margin: 15px 0; 
+      border: 2px solid #e5e7eb; 
+      border-radius: 8px;
+      page-break-inside: avoid;
+    }
+    .content-header { 
+      display: flex; 
+      gap: 12px; 
+      margin-bottom: 16px; 
+      padding-bottom: 12px; 
+      border-bottom: 2px solid #f3f4f6;
+    }
+    .content-number { 
+      width: 40px; 
+      height: 40px; 
+      background: #ea580c; 
+      color: white; 
+      border-radius: 6px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .content-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .badge { 
+      display: inline-block; 
+      padding: 4px 8px; 
+      margin: 3px; 
+      border-radius: 4px; 
+      font-size: 11px; 
+      font-weight: 600;
+    }
+    .badge-platform { background: #fed7aa; color: #9a3412; }
+    .badge-type { background: #bfdbfe; color: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <h1>✍️ Generated Content</h1>
+  <p><strong>Total Content Pieces:</strong> ${projectData.stage2.generatedContents.length}</p>
+  <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+  <hr style="margin: 20px 0; border: none; border-top: 2px solid #e5e7eb;"/>
+
+  ${projectData.stage2.generatedContents.map((content: GeneratedContent) => `
+    <div class="content-card">
+      <div class="content-header">
+        <div class="content-number">#${content.contentNumber}</div>
+        <div style="flex: 1;">
+          <div class="content-title">${content.title}</div>
+          <div>
+            <span class="badge badge-platform">${content.platform}</span>
+            <span class="badge badge-type">${content.contentType}</span>
+          </div>
+        </div>
+      </div>
+      
+      ${renderContentHTML(content)}
+      
+      ${content.hashtags && content.hashtags.length > 0 ? `
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;"># HASHTAGS</p>
+          <div>
+            ${content.hashtags.map((tag: string) => `<span style="font-size: 14px; padding: 4px 8px; margin: 3px; background: #f3f4f6; border-radius: 12px; display: inline-block;">#${tag}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `).join('')}
+
+  <div style="margin-top: 40px; padding: 20px; text-align: center; color: #6b7280; border-top: 1px solid #e5e7eb;">
+    <p>Generated by V28 AI Content Platform</p>
+  </div>
+</body>
+</html>
+    `;
+
+    downloadPDF(pdfHTML);
+  };
+
   // ==================== STAGE 1: AI MASTER RESEARCHER ====================
   const Stage1Researcher = () => {
     const [websiteUrl, setWebsiteUrl] = useState(projectData.stage1.websiteUrl);
@@ -223,6 +1882,20 @@ const V28Platform = () => {
     const [businessDetails, setBusinessDetails] = useState(projectData.stage1.businessDetails);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+
+    // Close download menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (showDownloadMenu && !target.closest('.download-menu-container')) {
+          setShowDownloadMenu(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showDownloadMenu]);
 
     const businessVerticals = [
       'Technology & Software', 'E-commerce & Retail', 'Healthcare & Medical',
@@ -865,12 +2538,92 @@ Generate EXACT JSON (NO markdown):
               </div>
             </div>
 
-            <button
-              onClick={() => setCurrentStage(2)}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 flex items-center justify-center gap-2"
-            >
-              Proceed to Content Strategy <ArrowRight className="w-5 h-5" />
-            </button>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="relative download-menu-container">
+                <button
+                  onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Brand Analysis
+                  <span className="ml-2">▼</span>
+                </button>
+
+                {showDownloadMenu && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-200 rounded-lg shadow-xl z-10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button
+                      onClick={() => {
+                        downloadStage1();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">🌐</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">HTML Format</p>
+                        <p className="text-xs text-gray-600">Styled webpage with exact design</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage1PDF();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-red-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📄</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">PDF Format</p>
+                        <p className="text-xs text-gray-600">Print-ready document (opens print dialog)</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage1DOC();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-indigo-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📝</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">DOC Format</p>
+                        <p className="text-xs text-gray-600">Microsoft Word compatible document</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage1CSV();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-green-50 transition-colors flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📊</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">CSV Format</p>
+                        <p className="text-xs text-gray-600">Spreadsheet data (Excel compatible)</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setCurrentStage(2)}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 flex items-center justify-center gap-2"
+              >
+                Proceed to Content Strategy <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -1466,6 +3219,9 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
   const Stage3Writer = () => {
     const [displayContent, setDisplayContent] = useState<GeneratedContent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editedContent, setEditedContent] = useState<GeneratedContent | null>(null);
+    const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
     useEffect(() => {
       // Load content from Stage 2
@@ -1477,6 +3233,161 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
         setIsLoading(false);
       }
     }, []);
+
+    // Close download menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (showDownloadMenu && !target.closest('.download-menu-container')) {
+          setShowDownloadMenu(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showDownloadMenu]);
+
+    const copyToClipboard = (content: GeneratedContent) => {
+      let textToCopy = '';
+
+      // Build text based on content type
+      textToCopy += `${content.title}\n`;
+      textToCopy += `Platform: ${content.platform}\n`;
+      textToCopy += `Type: ${content.contentType}\n\n`;
+
+      if (content.contentStructure === 'multi-slide' && content.slides) {
+        content.slides.forEach((slide: Slide) => {
+          textToCopy += `Slide ${slide.slideNumber} (${slide.type || 'content'}):\n`;
+          textToCopy += `${slide.headline}\n`;
+          if (slide.subheadline) textToCopy += `${slide.subheadline}\n`;
+          if (slide.content) textToCopy += `${slide.content}\n`;
+          if (slide.cta) textToCopy += `CTA: ${slide.cta}\n`;
+          textToCopy += `Visual: ${slide.visualDirection}\n\n`;
+        });
+        if (content.caption) textToCopy += `Caption: ${content.caption}\n`;
+      } else if (content.contentStructure === 'data-visual' && content.dataPoints) {
+        textToCopy += `${content.title}\n`;
+        if (content.subtitle) textToCopy += `${content.subtitle}\n\n`;
+        content.dataPoints.forEach((point: DataPoint) => {
+          textToCopy += `${point.statistic}: ${point.description}\n`;
+          textToCopy += `Source: ${point.source}\n\n`;
+        });
+      } else if (content.contentStructure === 'thread' && content.tweets) {
+        content.tweets.forEach((tweet: Tweet) => {
+          textToCopy += `Tweet ${tweet.tweetNumber} (${tweet.characterCount}/280):\n`;
+          textToCopy += `${tweet.content}\n\n`;
+        });
+      } else if (content.contentStructure === 'video-script' && content.script) {
+        textToCopy += `HOOK (${content.script.hook.timing}):\n`;
+        textToCopy += `${content.script.hook.voiceover}\n\n`;
+        content.script.content.forEach((seg: ScriptSegment, idx: number) => {
+          textToCopy += `SEGMENT ${idx + 1} (${seg.timing}):\n`;
+          textToCopy += `${seg.voiceover}\n\n`;
+        });
+        textToCopy += `CTA (${content.script.cta.timing}):\n`;
+        textToCopy += `${content.script.cta.voiceover}\n`;
+      } else if (content.contentStructure === 'story-frames' && content.frames) {
+        content.frames.forEach((frame: Frame) => {
+          textToCopy += `Frame ${frame.frameNumber} (${frame.type}):\n`;
+          textToCopy += `${frame.text}\n`;
+          textToCopy += `Visual: ${frame.visual}\n`;
+          textToCopy += `Interactive: ${frame.interactive}\n\n`;
+        });
+      } else if (content.contentStructure === 'email' && content.subjectLine) {
+        textToCopy += `Subject: ${content.subjectLine}\n`;
+        if (content.preheader) textToCopy += `Preheader: ${content.preheader}\n\n`;
+        const body = content.body as EmailBody;
+        if (body) {
+          textToCopy += `${body.greeting}\n\n`;
+          textToCopy += `${body.opening}\n\n`;
+          textToCopy += `${body.mainContent}\n\n`;
+          if (body.benefits) {
+            body.benefits.forEach((b: string) => {
+              textToCopy += `✓ ${b}\n`;
+            });
+            textToCopy += `\n`;
+          }
+          textToCopy += `CTA: ${body.cta}\n\n`;
+          textToCopy += `${body.closing}\n`;
+        }
+        if (content.ps) textToCopy += `\nP.S. ${content.ps}\n`;
+      } else if (content.contentStructure === 'long-form' && content.sections) {
+        textToCopy += `${content.title}\n\n`;
+        if (content.metaDescription) textToCopy += `${content.metaDescription}\n\n`;
+        if (content.introduction) textToCopy += `${content.introduction}\n\n`;
+        content.sections.forEach((sec: Section) => {
+          textToCopy += `${sec.heading}\n`;
+          textToCopy += `${sec.content}\n`;
+          if (sec.keyPoints) {
+            sec.keyPoints.forEach((p: string) => {
+              textToCopy += `• ${p}\n`;
+            });
+          }
+          textToCopy += `\n`;
+        });
+        if (content.conclusion) textToCopy += `${content.conclusion}\n`;
+      } else if (content.contentStructure === 'ad' && content.headline) {
+        textToCopy += `Headline: ${content.headline}\n\n`;
+        if (content.primaryText) textToCopy += `${content.primaryText}\n\n`;
+        if (content.description) textToCopy += `${content.description}\n\n`;
+        textToCopy += `CTA: ${content.cta}\n`;
+      } else {
+        if (content.hook) textToCopy += `HOOK:\n${content.hook}\n\n`;
+        if (content.body && typeof content.body === 'string') textToCopy += `CONTENT:\n${content.body}\n\n`;
+        if (content.cta) textToCopy += `CTA:\n${content.cta}\n`;
+      }
+
+      if (content.hashtags && content.hashtags.length > 0) {
+        textToCopy += `\nHashtags: ${content.hashtags.map(t => `#${t}`).join(' ')}`;
+      }
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('✅ Content copied to clipboard!');
+      }).catch(() => {
+        alert('❌ Failed to copy content');
+      });
+    };
+
+    const startEditing = (content: GeneratedContent) => {
+      setEditingId(content.id);
+      setEditedContent(JSON.parse(JSON.stringify(content))); // Deep copy
+    };
+
+    const cancelEditing = () => {
+      setEditingId(null);
+      setEditedContent(null);
+    };
+
+    const saveEditing = () => {
+      if (editedContent) {
+        const updatedContent = displayContent.map(c => 
+          c.id === editedContent.id ? editedContent : c
+        );
+        setDisplayContent(updatedContent);
+        
+        // Update project data
+        setProjectData(prev => ({
+          ...prev,
+          stage2: {
+            ...prev.stage2,
+            generatedContents: updatedContent
+          }
+        }));
+        
+        setEditingId(null);
+        setEditedContent(null);
+        alert('✅ Content saved successfully!');
+      }
+    };
+
+    const updateEditedField = (field: string, value: string | string[]) => {
+      if (editedContent) {
+        setEditedContent({
+          ...editedContent,
+          [field]: value
+        });
+      }
+    };
 
     const getCharacterStatus = (content: GeneratedContent) => {
       const platform = projectData.stage2.selectedPlatforms.find(p => p.id === content.platform?.toLowerCase());
@@ -1804,19 +3715,117 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
                                 {charStatus.status}
                               </span>
                             </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="p-2 rounded hover:bg-gray-100" title="Copy">
-                            <Copy className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 rounded hover:bg-gray-100" title="Edit">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => copyToClipboard(content)}
+                          className="p-2 rounded hover:bg-gray-100 transition-colors" 
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="w-4 h-4 text-gray-600 hover:text-blue-600" />
+                        </button>
+                        <button 
+                          onClick={() => startEditing(content)}
+                          className="p-2 rounded hover:bg-gray-100 transition-colors" 
+                          title="Edit content"
+                        >
+                          <Edit2 className="w-4 h-4 text-gray-600 hover:text-green-600" />
+                        </button>
+                      </div>
+                    </div>
 
-                      {renderContent(content)}
+                    {editingId === content.id && editedContent ? (
+                      <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mb-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-bold text-yellow-900 flex items-center gap-2">
+                            <Edit2 className="w-5 h-5" />
+                            Editing Mode
+                          </h4>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={saveEditing}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                            >
+                              Save Changes
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Title Edit */}
+                        <div className="mb-3">
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+                          <input
+                            type="text"
+                            value={editedContent.title}
+                            onChange={(e) => updateEditedField('title', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+
+                        {/* Simple content types (hook, body, cta) */}
+                        {editedContent.hook !== undefined && (
+                          <div className="mb-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Hook</label>
+                            <textarea
+                              value={editedContent.hook}
+                              onChange={(e) => updateEditedField('hook', e.target.value)}
+                              rows={3}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {editedContent.body !== undefined && typeof editedContent.body === 'string' && (
+                          <div className="mb-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Body</label>
+                            <textarea
+                              value={editedContent.body}
+                              onChange={(e) => updateEditedField('body', e.target.value)}
+                              rows={5}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {editedContent.cta !== undefined && (
+                          <div className="mb-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Call to Action</label>
+                            <input
+                              type="text"
+                              value={editedContent.cta}
+                              onChange={(e) => updateEditedField('cta', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {/* Hashtags Edit */}
+                        {editedContent.hashtags && (
+                          <div className="mb-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Hashtags (comma-separated)</label>
+                            <input
+                              type="text"
+                              value={editedContent.hashtags.join(', ')}
+                              onChange={(e) => updateEditedField('hashtags', e.target.value.split(',').map(t => t.trim()))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        <p className="text-sm text-yellow-800 italic">
+                          💡 Note: Advanced editing for complex content types (carousels, threads, etc.) will be available in the next update. For now, you can edit basic fields above.
+                        </p>
+                      </div>
+                    ) : null}
+
+                    {renderContent(content)}
 
                       {content.hashtags && content.hashtags.length > 0 && (
                         <div className="mt-4">
@@ -1834,12 +3843,92 @@ CRITICAL: Output ONLY valid JSON. No markdown. No text before or after.`
               </div>
             )}
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-                <h3 className="text-2xl font-bold text-green-800">Content Creation Complete!</h3>
+            <div className="space-y-4">
+              <div className="relative download-menu-container">
+                <button
+                  onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-cyan-700 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Download className="w-6 h-6" />
+                  Download All Generated Content
+                  <span className="ml-2">▼</span>
+                </button>
+
+                {showDownloadMenu && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-200 rounded-lg shadow-xl z-10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button
+                      onClick={() => {
+                        downloadStage3();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">🌐</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">HTML Format</p>
+                        <p className="text-xs text-gray-600">Styled webpage with exact design</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage3PDF();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-red-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📄</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">PDF Format</p>
+                        <p className="text-xs text-gray-600">Print-ready document (opens print dialog)</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage3DOC();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-indigo-50 transition-colors flex items-center gap-3 border-b border-gray-200"
+                    >
+                      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📝</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">DOC Format</p>
+                        <p className="text-xs text-gray-600">Microsoft Word compatible document</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        downloadStage3CSV();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-6 py-4 text-left hover:bg-green-50 transition-colors flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">📊</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-800">CSV Format</p>
+                        <p className="text-xs text-gray-600">Spreadsheet data (Excel compatible)</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
-              <p className="text-green-700">Your AI-generated content is ready for use. You can copy, edit, and share your content across all selected platforms.</p>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200 text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <h3 className="text-2xl font-bold text-green-800">Content Creation Complete!</h3>
+                </div>
+                <p className="text-green-700">Your AI-generated content is ready for use. You can copy, edit, and share your content across all selected platforms.</p>
+              </div>
             </div>
           </div>
         )}
