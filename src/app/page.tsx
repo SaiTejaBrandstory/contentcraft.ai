@@ -2019,7 +2019,7 @@ Generate EXACT JSON (NO markdown, NO backticks):
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "claude-sonnet-4-20250514",
-            max_tokens: 4000,
+            max_tokens: 6000,
             messages: [{
               role: "user",
               content: `You are a MASTER Marketing Campaign Strategist for ${businessVertical}.
@@ -2101,6 +2101,54 @@ Generate EXACT JSON (NO markdown):
       "contentTypes": ["Type 1"],
       "duration": "3 months",
       "kpis": ["KPI 1"],
+      "budget": "Low"
+    },
+    {
+      "name": "Seventh campaign",
+      "objective": "conversion",
+      "description": "Description",
+      "targetSegment": "Target",
+      "keyMessage": "Message",
+      "platforms": ["Platform 1", "Platform 2"],
+      "contentTypes": ["Type 1", "Type 2"],
+      "duration": "4 months",
+      "kpis": ["KPI 1", "KPI 2"],
+      "budget": "Medium"
+    },
+    {
+      "name": "Eighth campaign",
+      "objective": "awareness",
+      "description": "Description",
+      "targetSegment": "Target",
+      "keyMessage": "Message",
+      "platforms": ["Platform 1", "Platform 2", "Platform 3"],
+      "contentTypes": ["Type 1", "Type 2"],
+      "duration": "12 months",
+      "kpis": ["KPI 1", "KPI 2", "KPI 3"],
+      "budget": "High"
+    },
+    {
+      "name": "Ninth campaign",
+      "objective": "retention",
+      "description": "Description",
+      "targetSegment": "Target",
+      "keyMessage": "Message",
+      "platforms": ["Platform 1"],
+      "contentTypes": ["Type 1"],
+      "duration": "6 months",
+      "kpis": ["KPI 1", "KPI 2"],
+      "budget": "Medium"
+    },
+    {
+      "name": "Tenth campaign",
+      "objective": "engagement",
+      "description": "Description",
+      "targetSegment": "Target",
+      "keyMessage": "Message",
+      "platforms": ["Platform 1", "Platform 2"],
+      "contentTypes": ["Type 1", "Type 2", "Type 3"],
+      "duration": "3 months",
+      "kpis": ["KPI 1", "KPI 2"],
       "budget": "Low"
     }
   ]
