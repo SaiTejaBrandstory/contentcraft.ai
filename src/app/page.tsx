@@ -297,7 +297,7 @@ const V28Platform = () => {
 </head>
 <body>
   <div style="background: linear-gradient(to right, #eff6ff, #dbeafe); padding: 24px; border-radius: 12px; border: 1px solid #3b82f6; margin-bottom: 24px;">
-    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">AI Master Researcher</h2>
+    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">BrandStory Master Researcher</h2>
     <p style="color: #4b5563; font-size: 14px;">Comprehensive brand analysis</p>
   </div>
 
@@ -2202,7 +2202,7 @@ Generate EXACT JSON (NO markdown):
           <div className="flex items-start gap-4">
             <Brain className="w-8 h-8 text-blue-600 flex-shrink-0 mt-1" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">AI Master Researcher</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">BrandStory Master Researcher</h2>
               <p className="text-gray-600">Comprehensive brand analysis</p>
             </div>
           </div>
